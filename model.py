@@ -5,6 +5,7 @@ from PIL import Image
 from torchvision.transforms import ToPILImage
 from torch import nn
 from torch.functional import F
+from model_parts import *
 
 class DiffusionModel(L.LightningModule):
     def __init__(self, beta, unet_type='double', n_channels=1):
@@ -12,7 +13,11 @@ class DiffusionModel(L.LightningModule):
 
         if unet_type == 'double':
 
-            self.denoiser = DoubleUNet(n_channels)
+            self.denoiser = DoubleUNet28(n_channels)
+
+        if unet_type == 'single':
+
+            self.denoiser = SingleUNet28(n_channels)
 
         # find the parameters of the noising process
         self.beta = beta
@@ -35,10 +40,84 @@ class DiffusionModel(L.LightningModule):
             cur_img_t.save(f'{test_dir}/img_{i}_timestep_{cur_t}.jpg')
             cur_img_tp1.save(f'{test_dir}/img_{i}_timestep_{cur_t+1}.jpg')
 
+    def forward(self, x):
 
-class DoubleUNet(L.LightningModule):
+        return self.denoiser(x)
+
+
+class SingleUNet28(L.LightningModule):
     '''
-    Standard U-Net architecture
+    U-Net architecture, with one fewer up/down sampling (should work for 28x28 images)
+
+    Code adapted from https://github.com/milesial/Pytorch-UNet/
+    '''
+    def __init__(self, n_channels):
+        super().__init__()
+
+        self.n_channels = n_channels
+
+        self.inc = SingleConv(n_channels, 64)
+        self.down1 = SingleDown(64, 128)
+        self.down2 = SingleDown(128, 256)
+        self.down3 = SingleDown(256, 512 // 2)
+
+        self.up1 = SingleUp(512, 256 // 2)
+        self.up2 = SingleUp(256, 128 // 2)
+        self.up3 = SingleUp(128, 64)
+        self.outconv = OutConv(64, n_channels)
+
+    def forward(self, x):
+
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+        x = self.up1(x4, x3)
+        x = self.up2(x, x2)
+        x = self.up3(x, x1)
+        x = self.outconv(x)
+
+        return x
+
+class DoubleUNet28(L.LightningModule):
+    '''
+    U-Net architecture, with one fewer up/down sampling (should work for 28x28 images)
+
+    Code adapted from https://github.com/milesial/Pytorch-UNet/
+    '''
+    def __init__(self, n_channels):
+        super().__init__()
+
+        self.n_channels = n_channels
+
+        self.inc = DoubleConv(n_channels, 64)
+        self.down1 = DoubleDown(64, 128)
+        self.down2 = DoubleDown(128, 256)
+        self.down3 = DoubleDown(256, 512 // 2)
+
+        self.up1 = DoubleUp(512, 256 // 2)
+        self.up2 = DoubleUp(256, 128 // 2)
+        self.up3 = DoubleUp(128, 64)
+        self.outconv = OutConv(64, n_channels)
+
+    def forward(self, x):
+
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+        x = self.up1(x4, x3)
+        x = self.up2(x, x2)
+        x = self.up3(x, x1)
+        x = self.outconv(x)
+
+        return x
+
+
+
+class DoubleUNet32(L.LightningModule):
+    '''
+    Standard U-Net architecture (should work for 32x32 images)
 
     Code adapted from https://github.com/milesial/Pytorch-UNet/
     '''
@@ -72,70 +151,3 @@ class DoubleUNet(L.LightningModule):
         x = self.up5(x)
 
         return x
-
-
-class DoubleConv(nn.Module):
-
-    '''
-        Two convolutional layers
-        Batch norms and relus in between
-    '''
-
-    def __init__(self, in_channels, out_channels, mid_channels=None):
-        super().__init__()
-        if not mid_channels:
-            mid_channels = out_channels
-        self.double_conv = nn.Sequential(
-            nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(mid_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
-        )
-
-    def forward(self, x):
-        return self.double_conv(x)
-
-
-class DoubleDown(L.LightningModule):
-
-    def __init__(self, in_channels, out_channels):
-        super().__init__()
-
-        self.down_conv = nn.Sequential(
-            nn.MaxPool2d(2),
-            DoubleConv(in_channels, out_channels)
-        )
-
-    def forward(self, x):
-
-        self.down_conv(x)
-
-
-class DoubleUp(L.LightningModule):
-
-    def __init__(self, in_channels, out_channels):
-        super().__init__()
-
-        self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        self.conv = DoubleConv(in_channels, out_channels, in_channels//2)
-
-    def forward(self, x1, x2):
-
-        '''
-        Both x1, x2 are BCHW
-        x1: current layer to upsample
-        x2: corresponding layer to pad and concatenate
-        '''
-
-        x1 = self.up(x1)
-
-        deltaY = x2.shape[2] - x1.shape[2]
-        deltaX = x2.shape[3] - x1.shape[3]
-
-        x1 = F.pad(x1, [deltaX//2, deltaX//2, deltaY//2, deltaY//2])
-
-        x = torch.cat([x1, x2], dim=1)
-
-        return self.conv(x)

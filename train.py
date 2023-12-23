@@ -44,6 +44,10 @@ def parse_args():
                         help='maximum beta',
                         default=0.02,
                         type=float)
+    parser.add_argument('--unet_type',
+                        help='which type of unet to use - single or double',
+                        default='single',
+                        type=str)
 
     return parser.parse_args()
 
@@ -76,5 +80,7 @@ if __name__ == '__main__':
 
     # test the forward process
     beta = torch.cat((torch.Tensor([0]), torch.linspace(args.min_beta, args.max_beta, args.num_steps)))
-    model = DiffusionModel(beta=beta)
-    model.test_forward(train_loader, args.test_dir, n=10)
+    model = DiffusionModel(beta=beta, unet_type=args.unet_type)
+
+    x, y = next(iter(train_loader))
+    x = model.forward(x)
