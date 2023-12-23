@@ -10,7 +10,10 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description="Train a diffusion model")
 
-    parser.add_argument('--dataset', help='training dataset', default='MNIST', type=str)
+    parser.add_argument('--dataset',
+                        help='training dataset',
+                        default='MNIST',
+                        type=str)
     parser.add_argument('--transforms',
                         help='transforms to apply to dataset (only available is normalize)',
                         nargs="+",
@@ -29,8 +32,21 @@ def parse_args():
     parser.add_argument('--test_dir',
                         help='directory to save test images',
                         default='./test')
+    parser.add_argument('--num_steps',
+                        help='number of steps in the forward diffusion process',
+                        default=1000,
+                        type=int)
+    parser.add_argument('--min_beta',
+                        help='minimum beta',
+                        default=1e-4,
+                        type=float)
+    parser.add_argument('--max_beta',
+                        help='maximum beta',
+                        default=0.02,
+                        type=float)
 
     return parser.parse_args()
+
 
 if __name__ == '__main__':
 
@@ -59,6 +75,6 @@ if __name__ == '__main__':
         test_loader = torch.utils.data.DataLoader(test_set, batch_size=args.batch_size, shuffle=False)
 
     # test the forward process
-    beta = torch.linspace(1e-4, 0.02, 10)
-    model = DiffusionModel(denoiser=None, beta=beta)
+    beta = torch.cat((torch.Tensor([0]), torch.linspace(args.min_beta, args.max_beta, args.num_steps)))
+    model = DiffusionModel(beta=beta)
     model.test_forward(train_loader, args.test_dir, n=10)
