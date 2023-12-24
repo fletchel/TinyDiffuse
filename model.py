@@ -42,16 +42,15 @@ class DiffusionModel(L.LightningModule):
             cur_img_t.save(f'{test_dir}/img_{i}_timestep_{cur_t}.jpg')
             cur_img_tp1.save(f'{test_dir}/img_{i}_timestep_{cur_t+1}.jpg')
 
-    def forward(self, x):
+    def forward(self, x, t):
 
-        return self.denoiser(x)
+        return self.denoiser(x, t)
 
     def training_step(self, batch):
 
         x, y = batch
         noise = torch.randn(x)
 
-        pred_noise =
 
     def configure_optimizers(self):
 
@@ -70,6 +69,10 @@ class SingleUNet28(L.LightningModule):
 
         self.n_channels = n_channels
 
+        self.p_inc = get_positional_encodings(64)
+        self.p1 = get_positional_encodings(128)
+        self.p2 = get_positional_encodings(256)
+
         self.inc = SingleConv(n_channels, 64)
         self.down1 = SingleDown(64, 128)
         self.down2 = SingleDown(128, 256)
@@ -80,16 +83,20 @@ class SingleUNet28(L.LightningModule):
         self.up3 = SingleUp(128, 64)
         self.outconv = OutConv(64, n_channels)
 
-    def forward(self, x):
+    def forward(self, x, t):
 
-        x1 = self.inc(x)  # 28x28
-        x2 = self.down1(x1)  # output = 14x14
-        x3 = self.down2(x2)  # 7x7
-        x4 = self.down3(x3)  # 3x3
+        p1 = self.p_inc[t, :].reshape(1, -1, 1, 1)
+        p2 = self.p1[t, :].reshape(1, -1, 1, 1)
+        p3 = self.p2[t, :].reshape(1, -1, 1, 1)
 
-        x = self.up1(x4, x3)  # 7x7
-        x = self.up2(x, x2)  # 14x14
-        x = self.up3(x, x1)  # 28x28
+        x1 = self.inc(x) + p1  # output = 28x28
+        x2 = self.down1(x1) + p2  # 14x14
+        x3 = self.down2(x2) + p3  # 7x7
+        x4 = self.down3(x3) + p3  # 3x3
+
+        x = self.up1(x4, x3) + p2  # 7x7
+        x = self.up2(x, x2) + p1  # 14x14
+        x = self.up3(x, x1) + p1  # 28x28
         x = self.outconv(x)  # 28x28
 
         return x

@@ -43,7 +43,6 @@ class SingleUp(L.LightningModule):
         deltaX = x2.shape[3] - x1.shape[3]
 
         x1 = F.pad(x1, [deltaX//2, deltaX - deltaX//2, deltaY//2, deltaY - deltaY//2])
-
         x = torch.cat([x1, x2], dim=1)
 
         return self.conv(x)

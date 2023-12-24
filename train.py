@@ -83,4 +83,4 @@ if __name__ == '__main__':
     model = DiffusionModel(beta=beta, unet_type=args.unet_type)
 
     x, y = next(iter(train_loader))
-    x = model.forward(x)
+    x = model.forward(x, 10)
