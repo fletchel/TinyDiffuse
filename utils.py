@@ -49,3 +49,20 @@ def get_transforms(transform_args):
         transform_list.append(transforms.Normalize((0.5,), (0.5,)))
 
     return transform_list
+
+
+def get_positional_encodings(d, T=1000):
+
+    '''
+    returns [T, d] positional encodings for each timestep for feature vector of dim d
+    '''
+
+    pos_encodings = torch.zeros((T,d), requires_grad=False)
+
+    i = torch.arange(d//2)
+    p = torch.arange(T).unsqueeze(1)
+
+    pos_encodings[:, 0::2] = torch.sin(p / (10000 ** (2 * i / d)))
+    pos_encodings[:, 1::2] = torch.cos(p / (10000 ** (2 * i / d)))
+
+    return pos_encodings

@@ -3,12 +3,12 @@ import lightning as L
 from utils import *
 from PIL import Image
 from torchvision.transforms import ToPILImage
-from torch import nn
+from torch import nn, optim
 from torch.functional import F
 from model_parts import *
 
 class DiffusionModel(L.LightningModule):
-    def __init__(self, beta, unet_type='double', n_channels=1):
+    def __init__(self, beta, unet_type='double', n_channels=1, lr=1e-3):
         super().__init__()
 
         if unet_type == 'double':
@@ -18,6 +18,8 @@ class DiffusionModel(L.LightningModule):
         if unet_type == 'single':
 
             self.denoiser = SingleUNet28(n_channels)
+
+        self.lr = lr
 
         # find the parameters of the noising process
         self.beta = beta
@@ -44,6 +46,18 @@ class DiffusionModel(L.LightningModule):
 
         return self.denoiser(x)
 
+    def training_step(self, batch):
+
+        x, y = batch
+        noise = torch.randn(x)
+
+        pred_noise =
+
+    def configure_optimizers(self):
+
+        optimizer = optim.Adam(self.parameters(), lr=self.lr)
+        return optimizer
+
 
 class SingleUNet28(L.LightningModule):
     '''
@@ -68,14 +82,15 @@ class SingleUNet28(L.LightningModule):
 
     def forward(self, x):
 
-        x1 = self.inc(x)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x4 = self.down3(x3)
-        x = self.up1(x4, x3)
-        x = self.up2(x, x2)
-        x = self.up3(x, x1)
-        x = self.outconv(x)
+        x1 = self.inc(x)  # 28x28
+        x2 = self.down1(x1)  # output = 14x14
+        x3 = self.down2(x2)  # 7x7
+        x4 = self.down3(x3)  # 3x3
+
+        x = self.up1(x4, x3)  # 7x7
+        x = self.up2(x, x2)  # 14x14
+        x = self.up3(x, x1)  # 28x28
+        x = self.outconv(x)  # 28x28
 
         return x
 
