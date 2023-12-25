@@ -5,6 +5,8 @@ import argparse
 from utils import *
 import torch.utils
 from model import *
+from lightning_utils import *
+
 
 def parse_args():
 
@@ -48,6 +50,10 @@ def parse_args():
                         help='which type of unet to use - single or double',
                         default='single',
                         type=str)
+    parser.add_argument('--epochs',
+                        help='number of epochs to train for',
+                        default=20,
+                        type=int)
 
     return parser.parse_args()
 
@@ -80,7 +86,10 @@ if __name__ == '__main__':
 
     # test the forward process
     beta = torch.cat((torch.Tensor([0]), torch.linspace(args.min_beta, args.max_beta, args.num_steps)))
-    model = DiffusionModel(beta=beta, unet_type=args.unet_type)
+    model = DiffusionModel(beta=beta, unet_type=args.unet_type, T=args.num_steps)
 
-    x, y = next(iter(train_loader))
-    x = model.forward(x, 10)
+    # set parameters of the FID score
+    pfw.set_config(batch_size=args.batch_size, device=model.device)
+
+    trainer = pl.Trainer(max_epochs=args.epochs, callbacks=[TestLogging()])
+    trainer.fit(model, train_loader, None) # replaced val_dataloaders with None

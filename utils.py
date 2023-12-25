@@ -1,5 +1,6 @@
 import torch
 import torchvision.transforms as transforms
+
 def get_batch(imgs, alpha_bar):
 
     '''

@@ -1,9 +1,9 @@
 import torch
-import lightning as L
+import pytorch_lightning as pl
 import torch.nn as nn
 from torch.functional import F
 
-class SingleConv(L.LightningModule):
+class SingleConv(pl.LightningModule):
 
     '''
         One convolutional layers
@@ -21,7 +21,7 @@ class SingleConv(L.LightningModule):
     def forward(self, x):
         return self.conv(x)
 
-class SingleUp(L.LightningModule):
+class SingleUp(pl.LightningModule):
 
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -48,7 +48,7 @@ class SingleUp(L.LightningModule):
         return self.conv(x)
 
 
-class SingleDown(L.LightningModule):
+class SingleDown(pl.LightningModule):
 
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -67,7 +67,7 @@ class SingleDown(L.LightningModule):
 Below are the parts of a standard U-net - i.e. using double convolution layers etc.
 '''
 
-class DoubleConv(L.LightningModule):
+class DoubleConv(pl.LightningModule):
 
     '''
         Two convolutional layers
@@ -91,7 +91,7 @@ class DoubleConv(L.LightningModule):
         return self.double_conv(x)
 
 
-class DoubleDown(L.LightningModule):
+class DoubleDown(pl.LightningModule):
 
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -108,7 +108,7 @@ class DoubleDown(L.LightningModule):
 
 
 
-class DoubleUp(L.LightningModule):
+class DoubleUp(pl.LightningModule):
 
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -137,7 +137,7 @@ class DoubleUp(L.LightningModule):
 
 
 
-class OutConv(L.LightningModule):
+class OutConv(pl.LightningModule):
     '''
     Final conv layer, outputting image
     '''
