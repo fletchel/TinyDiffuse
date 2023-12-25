@@ -6,7 +6,7 @@ from utils import *
 import torch.utils
 from model import *
 from lightning_utils import *
-
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 def parse_args():
 
@@ -54,6 +54,14 @@ def parse_args():
                         help='number of epochs to train for',
                         default=20,
                         type=int)
+    parser.add_argument('--generate_sample_every_n_epochs',
+                        help='generate a grid of samples every n epochs, None to not',
+                        default=None,
+                        type=int)
+    parser.add_argument('--checkpoint_every_n_epochs',
+                        help='save a checkpoint ever n epochs, None to not',
+                        default=None,
+                        type=int)
 
     return parser.parse_args()
 
@@ -91,5 +99,16 @@ if __name__ == '__main__':
     # set parameters of the FID score
     pfw.set_config(batch_size=args.batch_size, device=model.device)
 
-    trainer = pl.Trainer(max_epochs=args.epochs, callbacks=[TestLogging()])
-    trainer.fit(model, train_loader, None) # replaced val_dataloaders with None
+    callbacks = []
+
+    if args.generate_sample_every_n_epochs:
+        callbacks.append(GenerateSamplesMNIST(args.generate_sample_every_n_epochs))
+
+    if args.save_checkpoint_every_n_epochs:
+        callbacks.append(ModelCheckpoint(
+            dirpath='./checkpoints',
+            every_n_epochs=args.save_checkpoint_every_n_epochs,
+            save_top_k=1))
+
+    trainer = pl.Trainer(max_epochs=args.epochs, callbacks=callbacks)
+    trainer.fit(model, train_loader, val_loader)
