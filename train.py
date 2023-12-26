@@ -110,5 +110,5 @@ if __name__ == '__main__':
             every_n_epochs=args.checkpoint_every_n_epochs,
             save_top_k=1))
 
-    trainer = pl.Trainer(max_epochs=args.epochs, callbacks=callbacks)
+    trainer = pl.Trainer(max_epochs=args.epochs, callbacks=callbacks, gpus=1)
     trainer.fit(model, train_loader, None)

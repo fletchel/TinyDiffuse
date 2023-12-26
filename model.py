@@ -33,7 +33,7 @@ class DiffusionModel(pl.LightningModule):
         # find the parameters of the noising process
         self.beta = beta.to(self.device)
         self.alpha = 1 - beta
-        self.alpha_bar = torch.cumprod(self.alpha, dim=0).to(self.device)
+        self.alpha_bar = torch.cumprod(self.alpha, dim=0)
 
         # set up validation step output list
 
