@@ -154,9 +154,9 @@ class SingleUNet28(pl.LightningModule):
 
         self.n_channels = n_channels
 
-        self.p_inc = get_positional_encodings(64)
-        self.p1 = get_positional_encodings(128)
-        self.p2 = get_positional_encodings(256)
+        self.p_inc = get_positional_encodings(64).to(self.device)
+        self.p1 = get_positional_encodings(128).to(self.device)
+        self.p2 = get_positional_encodings(256).to(self.device)
 
         self.inc = SingleConv(n_channels, 64)
         self.down1 = SingleDown(64, 128)
