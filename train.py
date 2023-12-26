@@ -68,6 +68,8 @@ def parse_args():
 
 if __name__ == '__main__':
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     args = parse_args()
 
     if args.dataset == "MNIST":
@@ -93,7 +95,7 @@ if __name__ == '__main__':
         test_loader = torch.utils.data.DataLoader(test_set, batch_size=args.batch_size, shuffle=False)
 
     # test the forward process
-    beta = torch.cat((torch.Tensor([0]), torch.linspace(args.min_beta, args.max_beta, args.num_steps)))
+    beta = torch.cat((torch.Tensor([0]), torch.linspace(args.min_beta, args.max_beta, args.num_steps))).to(device)
     model = DiffusionModel(beta=beta, unet_type=args.unet_type, T=args.num_steps)
 
     # set parameters of the FID score
@@ -110,5 +112,5 @@ if __name__ == '__main__':
             every_n_epochs=args.checkpoint_every_n_epochs,
             save_top_k=1))
 
-    trainer = pl.Trainer(max_epochs=args.epochs, callbacks=callbacks, gpus=1)
+    trainer = pl.Trainer(max_epochs=args.epochs, callbacks=callbacks)
     trainer.fit(model, train_loader, None)

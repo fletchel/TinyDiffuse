@@ -31,7 +31,7 @@ class DiffusionModel(pl.LightningModule):
         self.T = T
 
         # find the parameters of the noising process
-        self.beta = beta.to(self.device)
+        self.beta = beta
         self.alpha = 1 - beta
         self.alpha_bar = torch.cumprod(self.alpha, dim=0)
 
