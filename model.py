@@ -63,10 +63,10 @@ class DiffusionModel(pl.LightningModule):
 
         x, y = batch
 
-        batch_t = torch.randint(0, self.T, (x.shape[0],))
+        batch_t = torch.randint(0, self.T, (x.shape[0],)).to(self.device)
         cur_alpha_bar = self.alpha_bar[batch_t].reshape(-1, 1, 1, 1)
 
-        noise = torch.randn(x.shape)
+        noise = torch.randn(x.shape).to(self.device)
         pred_noise = self.denoiser(x*(cur_alpha_bar**0.5) + noise*(1 - cur_alpha_bar)**0.5, batch_t)
 
         loss = F.mse_loss(noise, pred_noise)
