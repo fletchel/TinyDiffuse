@@ -104,11 +104,11 @@ if __name__ == '__main__':
     if args.generate_sample_every_n_epochs:
         callbacks.append(GenerateSamplesMNIST(args.generate_sample_every_n_epochs))
 
-    if args.save_checkpoint_every_n_epochs:
+    if args.checkpoint_every_n_epochs:
         callbacks.append(ModelCheckpoint(
             dirpath='./checkpoints',
-            every_n_epochs=args.save_checkpoint_every_n_epochs,
+            every_n_epochs=args.checkpoint_every_n_epochs,
             save_top_k=1))
 
     trainer = pl.Trainer(max_epochs=args.epochs, callbacks=callbacks)
-    trainer.fit(model, train_loader, val_loader)
+    trainer.fit(model, train_loader, None)
