@@ -120,7 +120,7 @@ class DiffusionModel(pl.LightningModule):
 
         batch_size = sample_shape[0]
 
-        x = torch.randn(sample_shape)
+        x = torch.randn(sample_shape).to(self.device)
 
         for t in range(self.T, 1, -1):
 
@@ -131,7 +131,7 @@ class DiffusionModel(pl.LightningModule):
             z = torch.randn(x.shape) if t > 1 else torch.zeros(x.shape)
             pred_noise = self.denoiser(x, torch.tensor(t).expand(batch_size))
 
-            x = (1/cur_alpha)**0.5*(x - pred_noise*(1-cur_alpha)/((1-cur_alpha_bar)**0.5)) + sigma*z
+            x = (1/cur_alpha)**0.5*(x - pred_noise*(1-cur_alpha)/((1-cur_alpha_bar)**0.5)) + sigma*z.to(self.device)
 
         x = x.clamp(0, 1)
         return x
