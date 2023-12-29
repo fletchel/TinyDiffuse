@@ -58,7 +58,9 @@ def get_positional_encodings(d, T=1000):
     returns [T, d] positional encodings for each timestep for feature vector of dim d
     '''
 
-    pos_encodings = torch.zeros((T,d), requires_grad=False)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    pos_encodings = torch.zeros((T,d), requires_grad=False, device=device)
 
     i = torch.arange(d//2)
     p = torch.arange(T).unsqueeze(1)
