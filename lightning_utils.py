@@ -18,19 +18,19 @@ class TestLogging(pl.Callback):
 
 class GenerateSamplesMNIST(pl.Callback):
 
-    def __init__(self, sample_every_n):
+    def __init__(self, sample_every_n, grid_size=4):
         self.sample_every_n = sample_every_n
+        self.grid_size = grid_size
         super().__init__()
 
     def on_train_epoch_end(self, trainer, pl_module):
 
         cur_epoch = trainer.current_epoch
-        grid_size = pl_module.grid_size
 
         if cur_epoch % self.sample_every_n == 0:
 
-            generated_imgs = pl_module.generate_samples((grid_size, 1, 28, 28))
-            grid = make_grid(generated_imgs, nrow=grid_size)
+            generated_imgs = pl_module.generate_samples((self.grid_size, 1, 28, 28))
+            grid = make_grid(generated_imgs, nrow=self.grid_size)
             to_pil = ToPILImage()
             grid = to_pil(grid)
 

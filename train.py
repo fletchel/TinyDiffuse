@@ -62,6 +62,10 @@ def parse_args():
                         help='save a checkpoint ever n epochs, None to not',
                         default=None,
                         type=int)
+    parser.add_argument('--grid_size',
+                        help='size of grid for samples',
+                        default=None,
+                        type=int)
 
     return parser.parse_args()
 
@@ -104,7 +108,7 @@ if __name__ == '__main__':
     callbacks = []
 
     if args.generate_sample_every_n_epochs:
-        callbacks.append(GenerateSamplesMNIST(args.generate_sample_every_n_epochs))
+        callbacks.append(GenerateSamplesMNIST(args.generate_sample_every_n_epochs, grid_size=args.grid_size))
 
     if args.checkpoint_every_n_epochs:
         callbacks.append(ModelCheckpoint(
