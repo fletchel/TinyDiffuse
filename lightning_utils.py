@@ -32,9 +32,9 @@ class GenerateSamplesMNIST(pl.Callback):
             generated_imgs = pl_module.generate_samples((self.grid_size, 1, 28, 28))
             grid = make_grid(generated_imgs, nrow=self.grid_size)
             to_pil = ToPILImage()
-            grid = to_pil(grid)
+            pil_grid = to_pil(grid)
 
-            grid.save(f'test_samples/sample_grid_epoch_{cur_epoch}.jpg')
+            pil_grid.save(f'test_samples/sample_grid_epoch_{cur_epoch}.jpg')
             pl_module.logger.experiment.add_image('sample_images', grid, cur_epoch)
 
 
