@@ -66,11 +66,7 @@ class DiffusionModel(pl.LightningModule):
         batch_t = torch.randint(0, self.T, (x.shape[0],))
         cur_alpha_bar = self.alpha_bar[batch_t].reshape(-1, 1, 1, 1)
 
-        noise = torch.randn(x.shape)
-
-        print(noise.device)
-        print(cur_alpha_bar.device)
-        print(x.device)
+        noise = torch.randn(x.shape).to(self.device)
 
         pred_noise = self.denoiser(x*(cur_alpha_bar**0.5) + noise*(1 - cur_alpha_bar)**0.5, batch_t)
 
@@ -159,9 +155,9 @@ class SingleUNet28(pl.LightningModule):
 
         self.n_channels = n_channels
 
-        self.p_inc = get_positional_encodings(64)
-        self.p1 = get_positional_encodings(128)
-        self.p2 = get_positional_encodings(256)
+        self.p_inc = get_positional_encodings(64).to(self.device)
+        self.p1 = get_positional_encodings(128).to(self.device)
+        self.p2 = get_positional_encodings(256).to(self.device)
 
         self.inc = SingleConv(n_channels, 64)
         self.down1 = SingleDown(64, 128)
