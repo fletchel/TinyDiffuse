@@ -177,6 +177,11 @@ class SingleUNet28(pl.LightningModule):
         p2 = self.p1[t, :].reshape(batch_size, -1, 1, 1)
         p3 = self.p2[t, :].reshape(batch_size, -1, 1, 1)
 
+        print(p1.device)
+        print(self.p_inc.device)
+        print(x.device)
+        print(self.inc.device)
+
         x1 = self.inc(x) + p1  # output = 28x28
         x2 = self.down1(x1) + p2  # 14x14
         x3 = self.down2(x2) + p3  # 7x7
