@@ -155,9 +155,9 @@ class SingleUNet28(pl.LightningModule):
 
         self.n_channels = n_channels
 
-        self.p_inc = get_positional_encodings(64).to(self.device)
-        self.p1 = get_positional_encodings(128).to(self.device)
-        self.p2 = get_positional_encodings(256).to(self.device)
+        self.p_inc = get_positional_encodings(64)
+        self.p1 = get_positional_encodings(128)
+        self.p2 = get_positional_encodings(256)
 
         self.inc = SingleConv(n_channels, 64)
         self.down1 = SingleDown(64, 128)
@@ -173,9 +173,9 @@ class SingleUNet28(pl.LightningModule):
     def forward(self, x, t):
 
         batch_size = x.shape[0]
-        p1 = self.p_inc[t, :].reshape(batch_size, -1, 1, 1)
-        p2 = self.p1[t, :].reshape(batch_size, -1, 1, 1)
-        p3 = self.p2[t, :].reshape(batch_size, -1, 1, 1)
+        p1 = self.p_inc[t, :].reshape(batch_size, -1, 1, 1).to(self.device)
+        p2 = self.p1[t, :].reshape(batch_size, -1, 1, 1).to(self.device)
+        p3 = self.p2[t, :].reshape(batch_size, -1, 1, 1).to(self.device)
 
         print(p1.device)
         print(self.p_inc.device)
