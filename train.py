@@ -66,6 +66,10 @@ def parse_args():
                         help='size of grid for samples',
                         default=None,
                         type=int)
+    parser.add_argument('--lr',
+                        help='learning rate',
+                        default=None,
+                        type=float)
 
     return parser.parse_args()
 
@@ -100,7 +104,7 @@ if __name__ == '__main__':
 
     # test the forward process
     beta = torch.cat((torch.Tensor([0]), torch.linspace(args.min_beta, args.max_beta, args.num_steps))).to(device)
-    model = DiffusionModel(beta=beta, unet_type=args.unet_type, T=args.num_steps)
+    model = DiffusionModel(beta=beta, unet_type=args.unet_type, T=args.num_steps, lr=args.lr)
 
     # set parameters of the FID score
     pfw.set_config(batch_size=args.batch_size, device=model.device)
