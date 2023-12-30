@@ -29,7 +29,7 @@ class GenerateSamplesMNIST(pl.Callback):
 
         if cur_epoch % self.sample_every_n == 0:
 
-            generated_imgs = pl_module.generate_samples((self.grid_size, 1, 28, 28))
+            generated_imgs = pl_module.generate_samples((self.grid_size**2, 1, 28, 28))
             grid = make_grid(generated_imgs, nrow=self.grid_size)
             to_pil = ToPILImage()
             pil_grid = to_pil(grid)
