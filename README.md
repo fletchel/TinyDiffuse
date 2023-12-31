@@ -5,3 +5,4 @@
 - Add FID evaluation
 - Fix grid sampling
 - Test on other data (CIFAR etc.)
+- GIF of generation
